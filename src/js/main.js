@@ -1,3 +1,4 @@
+// 유저가 업로드한 10개 논문의 실제 파일명 데이터
 const papersDatabase = [
     { filename: "Syngas production through CO2-mediated pyrolysis of polyoxymethylene", displayName: "CO2 매개 POM 열분해를 통한 합성가스 생산 (2024)" },
     { filename: "Pyrolysis mechanism of engineering plastic waste under carbon dioxide", displayName: "이산화탄소 분위기 고성능 플라스틱 열분해 메커니즘 (2026)" },
@@ -31,7 +32,7 @@ const btnNextPage = document.getElementById("btn-next");
 const summaryDisplayPre = document.getElementById("summary-display");
 const summaryPlaceholderElement = document.getElementById("summary-placeholder");
 const btnCopySummary = document.getElementById("btn-copy");
-const btnToggleSidebar = document.getElementById("btn-toggle-sidebar"); // 추가됨
+const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
 
 function initializeDashboard() {
     paperCountBadge.textContent = `${papersDatabase.length} Papers`;
@@ -48,17 +49,12 @@ function initializeDashboard() {
     btnPrevPage.addEventListener("click", handlePreviousPageAction);
     btnNextPage.addEventListener("click", handleNextPageAction);
     btnCopySummary.addEventListener("click", handleSummaryClipboardCopy);
-
-    // 모바일 배경 클릭 시 닫기
     mobileBackdrop.addEventListener("click", closeAllMobilePanels);
 
-    // 💡 추가됨: 사이드바 토글 버튼 클릭 이벤트
     btnToggleSidebar.addEventListener("click", () => {
         if (window.innerWidth > 768) {
-            // PC: 사이드바를 접거나 폅니다.
             sidebarEl.classList.toggle("collapsed");
         } else {
-            // 모바일: 스와이프 없이 메뉴 버튼으로 논문 목록을 엽니다.
             sidebarEl.classList.add("open");
             mobileBackdrop.classList.add("active");
         }
@@ -170,16 +166,42 @@ function handleNextPageAction() {
     if (currentPageNumber < selectedPaper.totalPages) { currentPageNumber++; renderTargetImageFrame(); }
 }
 
-// 모바일 스와이프(Swipe) 로직
+// ==========================================
+// 📱 모바일 스와이프(Swipe) 터치 제어 로직
+// ==========================================
 let touchStartX = 0;
 let touchEndX = 0;
 const SWIPE_THRESHOLD = 60;
+let isSwipeAllowed = true;
 
 document.addEventListener('touchstart', e => {
+    // 1. 두 손가락 이상 닿으면 확대/축소 동작이므로 스와이프 무시
+    if (e.touches.length > 1) {
+        isSwipeAllowed = false;
+        return;
+    }
+
+    // 2. 화면이 조금이라도 확대된 상태(scale > 1)라면 스와이프 무시
+    const currentScale = window.visualViewport ? window.visualViewport.scale : 1;
+    if (currentScale > 1.05) {
+        isSwipeAllowed = false;
+        return;
+    }
+
+    isSwipeAllowed = true;
     touchStartX = e.changedTouches[0].screenX;
 }, { passive: true });
 
+document.addEventListener('touchmove', e => {
+    // 움직이는 도중에 두 손가락이 닿아도 스와이프 차단
+    if (e.touches.length > 1) {
+        isSwipeAllowed = false;
+    }
+}, { passive: true });
+
 document.addEventListener('touchend', e => {
+    if (!isSwipeAllowed) return; // 스와이프 조건에 부합하지 않으면 탈출
+
     touchEndX = e.changedTouches[0].screenX;
     handleSwipeGesture();
 }, { passive: true });
