@@ -16,6 +16,9 @@ let selectedPaper = null;
 let currentPageNumber = 1;
 
 // DOM 캐싱
+const sidebarEl = document.getElementById("sidebar");
+const summaryEl = document.getElementById("summary-container");
+const mobileBackdrop = document.getElementById("mobile-backdrop");
 const paperListContainer = document.getElementById("paper-list");
 const paperCountBadge = document.getElementById("paper-count");
 const viewerTitleDisplay = document.getElementById("viewer-title");
@@ -45,6 +48,9 @@ function initializeDashboard() {
     btnPrevPage.addEventListener("click", handlePreviousPageAction);
     btnNextPage.addEventListener("click", handleNextPageAction);
     btnCopySummary.addEventListener("click", handleSummaryClipboardCopy);
+
+    // 모바일 배경 클릭 시 열려있는 메뉴 닫기
+    mobileBackdrop.addEventListener("click", closeAllMobilePanels);
 }
 
 function handlePaperSelection(filename) {
@@ -59,7 +65,7 @@ function handlePaperSelection(filename) {
     viewerTitleDisplay.textContent = selectedPaper.displayName;
     pdfDownloadLink.style.display = "inline-flex";
     
-    // 💡 수정 완료: PDF는 폴더 밖(resources 바로 아래)에서 찾음
+    // PDF 폴더 밖에서 로드
     pdfDownloadLink.href = `./src/resources/${selectedPaper.filename}.pdf`;
     
     viewerControlsPanel.style.display = "flex";
@@ -68,18 +74,23 @@ function handlePaperSelection(filename) {
     fetchSummaryTextContent(selectedPaper.filename);
 
     viewerPlaceholderElement.style.display = "block";
-    viewerPlaceholderElement.innerHTML = "<p>🔍 원문 이미지 개수와 파일 형식을 자동으로 파악 중입니다...</p>";
+    viewerPlaceholderElement.innerHTML = "<p>🔍 원문 이미지 개수 파악 중...</p>";
     documentImageElement.style.display = "none";
 
     probePaperImages(selectedPaper.filename, (total, isPadded) => {
         if (total === 0) {
-            viewerPlaceholderElement.innerHTML = `<p>⚠️ 이미지를 찾을 수 없습니다.<br>resources/${selectedPaper.filename}/ 폴더 내에 이미지 파일이 있는지 확인해주세요.</p>`;
+            viewerPlaceholderElement.innerHTML = `<p>⚠️ 이미지를 찾을 수 없습니다.</p>`;
         } else {
             selectedPaper.totalPages = total;
             selectedPaper.isPadded = isPadded; 
             renderTargetImageFrame();
         }
     });
+
+    // 모바일 환경에서 논문을 클릭하면 사이드바를 자동으로 닫아줍니다.
+    if (window.innerWidth <= 768) {
+        closeAllMobilePanels();
+    }
 }
 
 // 📌 백그라운드 탐색기 (이미지는 논문명 폴더 안에서 찾음)
@@ -98,14 +109,10 @@ function probePaperImages(filename, callback) {
         };
 
         img.onerror = () => {
-            if (page === 1 && !checkingPadded) {
-                tryLoad(1, true);
-            } else {
-                callback(currentMax, detectedPadded);
-            }
+            if (page === 1 && !checkingPadded) tryLoad(1, true);
+            else callback(currentMax, detectedPadded);
         };
 
-        // 이미지는 폴더 안에서!
         img.src = `./src/resources/${filename}/${filename}-${pageStr}.png`;
     }
 
@@ -117,8 +124,6 @@ function renderTargetImageFrame() {
     documentImageElement.style.display = "block";
 
     let pageStr = selectedPaper.isPadded ? String(currentPageNumber).padStart(2, '0') : String(currentPageNumber);
-    
-    // 렌더링할 때도 이미지는 폴더 안에서!
     documentImageElement.src = `./src/resources/${selectedPaper.filename}/${selectedPaper.filename}-${pageStr}.png`;
 
     pageNumberIndicator.textContent = `${currentPageNumber} / ${selectedPaper.totalPages}`;
@@ -131,47 +136,89 @@ function fetchSummaryTextContent(filename) {
     summaryDisplayPre.style.display = "block";
     summaryDisplayPre.textContent = "요약 텍스트 로딩 중...";
 
-    // 💡 수정 완료: TXT도 폴더 밖(resources 바로 아래)에서 찾음
+    // TXT 폴더 밖에서 로드
     fetch(`./src/resources/${filename}.txt`)
         .then(response => {
-            if (!response.ok) throw new Error(`서버 응답 에러: ${response.status}`);
+            if (!response.ok) throw new Error("에러");
             return response.text();
         })
         .then(data => { summaryDisplayPre.textContent = data; })
-        .catch(err => { summaryDisplayPre.textContent = `⚠️ [요약본 로드 에러]\n파일이 없거나 브라우저 보안에 막혔습니다.\nVS Code의 Live Server를 사용해주세요.`; });
+        .catch(err => { summaryDisplayPre.textContent = `⚠️ 요약본 로드 실패`; });
 }
 
 function handleSummaryClipboardCopy() {
     const textBuffer = summaryDisplayPre.textContent;
     if (!textBuffer || textBuffer.startsWith("요약") || textBuffer.startsWith("⚠️")) return;
 
-    navigator.clipboard.writeText(textBuffer)
-        .then(() => {
-            const preservedText = btnCopySummary.textContent;
-            btnCopySummary.textContent = "복사 완료! ✔️";
-            btnCopySummary.style.backgroundColor = "#e2f5e9";
-            btnCopySummary.style.color = "#15803d";
-            setTimeout(() => {
-                btnCopySummary.textContent = preservedText;
-                btnCopySummary.style.backgroundColor = "#ffffff";
-                btnCopySummary.style.color = "#475569";
-            }, 1200);
-        })
-        .catch(error => { alert("클립보드 액세스 실패: " + error); });
+    navigator.clipboard.writeText(textBuffer).then(() => {
+        const preservedText = btnCopySummary.textContent;
+        btnCopySummary.textContent = "복사 완료! ✔️";
+        setTimeout(() => { btnCopySummary.textContent = preservedText; }, 1200);
+    });
 }
 
 function handlePreviousPageAction() {
-    if (currentPageNumber > 1) {
-        currentPageNumber--;
-        renderTargetImageFrame();
+    if (currentPageNumber > 1) { currentPageNumber--; renderTargetImageFrame(); }
+}
+function handleNextPageAction() {
+    if (currentPageNumber < selectedPaper.totalPages) { currentPageNumber++; renderTargetImageFrame(); }
+}
+
+// ==========================================
+// 📱 모바일 스와이프(Swipe) 터치 제어 로직
+// ==========================================
+let touchStartX = 0;
+let touchEndX = 0;
+const SWIPE_THRESHOLD = 60; // 최소 스와이프 감지 거리(픽셀)
+
+document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipeGesture();
+}, { passive: true });
+
+function handleSwipeGesture() {
+    // 화면 너비가 모바일 사이즈(768px 이하)일 때만 작동
+    if (window.innerWidth > 768) return;
+
+    const swipeDistance = touchEndX - touchStartX;
+
+    // 오른쪽으로 스와이프 (메뉴 열기 or 요약 닫기)
+    if (swipeDistance > SWIPE_THRESHOLD) {
+        if (summaryEl.classList.contains('open')) {
+            // 요약 창이 열려있으면 닫음
+            summaryEl.classList.remove('open');
+            mobileBackdrop.classList.remove('active');
+        } else {
+            // 안 열려있으면 왼쪽 사이드바 열기
+            sidebarEl.classList.add('open');
+            mobileBackdrop.classList.add('active');
+        }
+    }
+    // 왼쪽으로 스와이프 (사이드바 닫기 or 요약 열기)
+    else if (swipeDistance < -SWIPE_THRESHOLD) {
+        if (sidebarEl.classList.contains('open')) {
+            // 사이드바가 열려있으면 닫음
+            sidebarEl.classList.remove('open');
+            mobileBackdrop.classList.remove('active');
+        } else {
+            // 안 열려있으면 오른쪽 요약 창 열기
+            if (selectedPaper) { // 논문이 선택되었을 때만 요약 창 띄움
+                summaryEl.classList.add('open');
+                mobileBackdrop.classList.add('active');
+            }
+        }
     }
 }
 
-function handleNextPageAction() {
-    if (currentPageNumber < selectedPaper.totalPages) {
-        currentPageNumber++;
-        renderTargetImageFrame();
-    }
+// 배경 클릭 시 모든 메뉴 닫는 공통 함수
+function closeAllMobilePanels() {
+    sidebarEl.classList.remove('open');
+    summaryEl.classList.remove('open');
+    mobileBackdrop.classList.remove('active');
 }
 
 initializeDashboard();
