@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연구 논문 검토 및 요약 대시보드</title>
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 1. 가장 좌측: 논문 선택 칸 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>논문 선택</h2>
+                <span class="badge" id="paper-count">0 Papers</span>
+            </div>
+            <ul id="paper-list" class="paper-list">
+                <!-- JavaScript에서 동적으로 생성됨 -->
+            </ul>
+        </aside>
+
+        <!-- 2. 중앙: 이미지 표시 및 페이지 넘기기 -->
+        <main class="viewer-container">
+            <div class="panel-header">
+                <h2 id="viewer-title">논문을 선택해주세요</h2>
+                <a id="pdf-download-link" href="#" download class="btn btn-primary" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    PDF 다운로드
+                </a>
+            </div>
+            
+            <div class="image-viewport">
+                <div id="viewer-placeholder" class="placeholder-msg">
+                    <p>좌측 목록에서 논문을 선택하시면 원문 이미지가 여기에 렌더링됩니다.</p>
+                </div>
+                <img id="document-image" src="" alt="논문 원문 이미지" style="display: none;">
+            </div>
+
+            <div id="viewer-controls" class="viewer-controls" style="display: none;">
+                <button id="btn-prev" class="btn btn-secondary">◀ 이전 장</button>
+                <span id="page-number-indicator">1 / 1</span>
+                <button id="btn-next" class="btn btn-secondary">다음 장 ▶</button>
+            </div>
+        </main>
+
+        <!-- 3. 우측: 논문 요약 텍스트 표시 칸 -->
+        <section class="summary-container">
+            <div class="panel-header">
+                <h2>논문 요약본 (TXT)</h2>
+                <button id="btn-copy" class="btn btn-secondary" style="display: none;">텍스트 복사</button>
+            </div>
+            <div class="summary-body">
+                <div id="summary-placeholder" class="placeholder-msg">
+                    <p>요약 파일(.txt) 내용이 여기에 표시됩니다.</p>
+                </div>
+                <pre id="summary-display" style="display: none;"></pre>
+            </div>
+        </section>
+    </div>
+
+    <script src="src/js/main.js"></script>
+</body>
+</html>
