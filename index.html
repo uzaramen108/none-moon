@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>연구 논문 검토 및 요약 대시보드</title>
     <link rel="stylesheet" href="src/styles.css">
 </head>
@@ -21,7 +21,12 @@
 
         <main class="viewer-container">
             <div class="panel-header">
-                <h2 id="viewer-title">논문을 선택해주세요</h2>
+                <div style="display: flex; align-items: center; gap: 12px; overflow: hidden;">
+                    <button id="btn-toggle-sidebar" class="btn btn-secondary" style="padding: 6px 10px; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <h2 id="viewer-title">논문을 선택해주세요</h2>
+                </div>
                 <a id="pdf-download-link" href="#" download class="btn btn-primary" style="display: none;">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                     PDF
@@ -30,7 +35,7 @@
             
             <div class="image-viewport">
                 <div id="viewer-placeholder" class="placeholder-msg">
-                    <p>좌측 목록에서 논문을 선택하시면 원문 이미지가 여기에 렌더링됩니다.<br><br>📱 <b>모바일:</b> 화면을 오른쪽으로 밀면 논문 목록, 왼쪽으로 밀면 요약본이 나옵니다.</p>
+                    <p>좌측 목록에서 논문을 선택하시면 원문 이미지가 여기에 렌더링됩니다.<br><br>📱 <b>모바일:</b> 두 손가락으로 확대(Zoom)가 가능하며, 좌우 스와이프로 메뉴를 엽니다.</p>
                 </div>
                 <img id="document-image" src="" alt="논문 원문 이미지" style="display: none;">
             </div>

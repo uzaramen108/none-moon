@@ -1,4 +1,3 @@
-// 유저가 업로드한 10개 논문의 실제 파일명 데이터
 const papersDatabase = [
     { filename: "Syngas production through CO2-mediated pyrolysis of polyoxymethylene", displayName: "CO2 매개 POM 열분해를 통한 합성가스 생산 (2024)" },
     { filename: "Pyrolysis mechanism of engineering plastic waste under carbon dioxide", displayName: "이산화탄소 분위기 고성능 플라스틱 열분해 메커니즘 (2026)" },
@@ -32,6 +31,7 @@ const btnNextPage = document.getElementById("btn-next");
 const summaryDisplayPre = document.getElementById("summary-display");
 const summaryPlaceholderElement = document.getElementById("summary-placeholder");
 const btnCopySummary = document.getElementById("btn-copy");
+const btnToggleSidebar = document.getElementById("btn-toggle-sidebar"); // 추가됨
 
 function initializeDashboard() {
     paperCountBadge.textContent = `${papersDatabase.length} Papers`;
@@ -49,8 +49,20 @@ function initializeDashboard() {
     btnNextPage.addEventListener("click", handleNextPageAction);
     btnCopySummary.addEventListener("click", handleSummaryClipboardCopy);
 
-    // 모바일 배경 클릭 시 열려있는 메뉴 닫기
+    // 모바일 배경 클릭 시 닫기
     mobileBackdrop.addEventListener("click", closeAllMobilePanels);
+
+    // 💡 추가됨: 사이드바 토글 버튼 클릭 이벤트
+    btnToggleSidebar.addEventListener("click", () => {
+        if (window.innerWidth > 768) {
+            // PC: 사이드바를 접거나 폅니다.
+            sidebarEl.classList.toggle("collapsed");
+        } else {
+            // 모바일: 스와이프 없이 메뉴 버튼으로 논문 목록을 엽니다.
+            sidebarEl.classList.add("open");
+            mobileBackdrop.classList.add("active");
+        }
+    });
 }
 
 function handlePaperSelection(filename) {
@@ -64,8 +76,6 @@ function handlePaperSelection(filename) {
 
     viewerTitleDisplay.textContent = selectedPaper.displayName;
     pdfDownloadLink.style.display = "inline-flex";
-    
-    // PDF 폴더 밖에서 로드
     pdfDownloadLink.href = `./src/resources/${selectedPaper.filename}.pdf`;
     
     viewerControlsPanel.style.display = "flex";
@@ -87,13 +97,11 @@ function handlePaperSelection(filename) {
         }
     });
 
-    // 모바일 환경에서 논문을 클릭하면 사이드바를 자동으로 닫아줍니다.
     if (window.innerWidth <= 768) {
         closeAllMobilePanels();
     }
 }
 
-// 📌 백그라운드 탐색기 (이미지는 논문명 폴더 안에서 찾음)
 function probePaperImages(filename, callback) {
     let currentMax = 0;
     let detectedPadded = false;
@@ -115,7 +123,6 @@ function probePaperImages(filename, callback) {
 
         img.src = `./src/resources/${filename}/${filename}-${pageStr}.png`;
     }
-
     tryLoad(1, false);
 }
 
@@ -136,7 +143,6 @@ function fetchSummaryTextContent(filename) {
     summaryDisplayPre.style.display = "block";
     summaryDisplayPre.textContent = "요약 텍스트 로딩 중...";
 
-    // TXT 폴더 밖에서 로드
     fetch(`./src/resources/${filename}.txt`)
         .then(response => {
             if (!response.ok) throw new Error("에러");
@@ -164,12 +170,10 @@ function handleNextPageAction() {
     if (currentPageNumber < selectedPaper.totalPages) { currentPageNumber++; renderTargetImageFrame(); }
 }
 
-// ==========================================
-// 📱 모바일 스와이프(Swipe) 터치 제어 로직
-// ==========================================
+// 모바일 스와이프(Swipe) 로직
 let touchStartX = 0;
 let touchEndX = 0;
-const SWIPE_THRESHOLD = 60; // 최소 스와이프 감지 거리(픽셀)
+const SWIPE_THRESHOLD = 60;
 
 document.addEventListener('touchstart', e => {
     touchStartX = e.changedTouches[0].screenX;
@@ -181,32 +185,25 @@ document.addEventListener('touchend', e => {
 }, { passive: true });
 
 function handleSwipeGesture() {
-    // 화면 너비가 모바일 사이즈(768px 이하)일 때만 작동
     if (window.innerWidth > 768) return;
 
     const swipeDistance = touchEndX - touchStartX;
 
-    // 오른쪽으로 스와이프 (메뉴 열기 or 요약 닫기)
     if (swipeDistance > SWIPE_THRESHOLD) {
         if (summaryEl.classList.contains('open')) {
-            // 요약 창이 열려있으면 닫음
             summaryEl.classList.remove('open');
             mobileBackdrop.classList.remove('active');
         } else {
-            // 안 열려있으면 왼쪽 사이드바 열기
             sidebarEl.classList.add('open');
             mobileBackdrop.classList.add('active');
         }
     }
-    // 왼쪽으로 스와이프 (사이드바 닫기 or 요약 열기)
     else if (swipeDistance < -SWIPE_THRESHOLD) {
         if (sidebarEl.classList.contains('open')) {
-            // 사이드바가 열려있으면 닫음
             sidebarEl.classList.remove('open');
             mobileBackdrop.classList.remove('active');
         } else {
-            // 안 열려있으면 오른쪽 요약 창 열기
-            if (selectedPaper) { // 논문이 선택되었을 때만 요약 창 띄움
+            if (selectedPaper) {
                 summaryEl.classList.add('open');
                 mobileBackdrop.classList.add('active');
             }
@@ -214,7 +211,6 @@ function handleSwipeGesture() {
     }
 }
 
-// 배경 클릭 시 모든 메뉴 닫는 공통 함수
 function closeAllMobilePanels() {
     sidebarEl.classList.remove('open');
     summaryEl.classList.remove('open');

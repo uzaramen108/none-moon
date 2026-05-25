@@ -1,37 +1,46 @@
-/* 기존 PC 레이아웃 베이스 */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f8fafc;
-    color: #1e293b;
-    height: 100vh;
-    overflow: hidden;
-    touch-action: pan-y; /* 수직 스크롤 허용, 스와이프 인식 부드럽게 */
+    background-color: #f8fafc; color: #1e293b; height: 100vh; overflow: hidden;
+    touch-action: pan-x pan-y pinch-zoom; /* 확대 및 스와이프 허용 */
 }
 
 .app-container { display: flex; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
 
-/* 1. Sidebar Styles */
+/* 1. Sidebar Styles (PC에서 접기 애니메이션 지원) */
 .sidebar {
     width: 25%; min-width: 320px; background-color: #0f172a; color: #f8fafc;
     display: flex; flex-direction: column; border-right: 1px solid #1e293b;
+    transition: width 0.3s ease, min-width 0.3s ease; /* 부드러운 토글 효과 */
+    overflow: hidden; /* 영역 밖 글씨 숨김 */
 }
+
+/* PC 사이드바 숨김 상태 클래스 */
+.sidebar.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+}
+
 .sidebar-header {
     padding: 24px 20px; background-color: #020617; border-bottom: 1px solid #1e293b;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: space-between; align-items: center; min-width: 320px;
 }
 .sidebar-header h2 { font-size: 1.15rem; font-weight: 600; }
 .badge { background-color: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-.paper-list { list-style: none; overflow-y: auto; flex: 1; }
+.paper-list { list-style: none; overflow-y: auto; flex: 1; min-width: 320px; }
 .paper-item { padding: 16px 20px; border-bottom: 1px solid #1e293b; cursor: pointer; transition: all 0.2s ease; }
 .paper-item:hover { background-color: #1e293b; }
 .paper-item.active { background-color: #2563eb; color: #ffffff; }
 .paper-item .paper-meta { font-size: 0.75rem; font-weight: 700; color: #38bdf8; margin-bottom: 4px; display: block; }
-.paper-item.active .paper-meta { color: #93c5fd; }
 .paper-item .paper-title { font-size: 0.875rem; line-height: 1.45; font-weight: 500; word-break: break-word; }
 
-/* 2. Middle Image Viewer Section */
-.viewer-container { width: 50%; display: flex; flex-direction: column; background-color: #f1f5f9; border-right: 1px solid #e2e8f0; }
+/* 2. Middle Image Viewer Section (남는 공간 자동 채우기) */
+.viewer-container { 
+    flex: 1; /* 너비 50% 대신 남는 공간을 모두 차지하도록 변경 */
+    min-width: 0; 
+    display: flex; flex-direction: column; background-color: #f1f5f9; border-right: 1px solid #e2e8f0; 
+}
 .panel-header {
     height: 70px; padding: 0 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0;
     display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
@@ -56,31 +65,26 @@ body {
 .btn-secondary:hover { background-color: #f1f5f9; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* 📱 모바일 디바이스 반응형 스와이프 UI 설정 */
+/* 📱 모바일 디바이스 반응형 (모바일에서는 collapsed 속성 무시) */
 .mobile-backdrop { display: none; }
 
 @media screen and (max-width: 768px) {
-    /* 모바일 배경 어두워짐 */
     .mobile-backdrop {
         display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
         background-color: rgba(0, 0, 0, 0.5); z-index: 10; transition: opacity 0.3s ease;
     }
     .mobile-backdrop.active { display: block; }
-
-    /* 메인 뷰어 풀사이즈 */
-    .viewer-container { width: 100%; }
     .panel-header { padding: 0 16px; }
 
-    /* 사이드바(논문 목록) 왼쪽 화면 밖으로 숨김 */
     .sidebar {
-        position: fixed; top: 0; left: -100%; width: 85%; height: 100vh;
+        position: fixed; top: 0; left: -100%; width: 85%; height: 100vh; min-width: unset;
         z-index: 20; transition: left 0.3s ease-in-out;
     }
     .sidebar.open { left: 0; }
+    .sidebar.collapsed { width: 85%; } /* 모바일에서는 숨김 기능 오버라이딩 */
 
-    /* 요약본 오른쪽 화면 밖으로 숨김 */
     .summary-container {
-        position: fixed; top: 0; right: -100%; width: 85%; height: 100vh;
+        position: fixed; top: 0; right: -100%; width: 85%; height: 100vh; min-width: unset;
         z-index: 20; transition: right 0.3s ease-in-out; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
     }
     .summary-container.open { right: 0; }
