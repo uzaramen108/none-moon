@@ -1,48 +1,153 @@
 <!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>내 라이브러리 관리</title><link rel="stylesheet" href="../../resources/style.css"><style>/* 🚨 [스크롤 강제 복구 로직] 기존 CSS의 방해를 모두 무력화 🚨 */
-        html, body {
-            overflow: auto !important;
-            overflow-y: auto !important;
-            height: auto !important;
-            min-height: 100vh !important;
-            touch-action: auto !important; /* 모바일 스크롤 허용 */
-        }
-        
-        /* 💡 메인 화면에서 숨겼던 스크롤바를 관리 페이지에만 예쁘게 다시 등장시킴 */
-        *::-webkit-scrollbar {
-            display: block !important;
-            width: 10px !important;
-        }
-        *::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1 !important;
-            border-radius: 5px !important;
-        }
-        *::-webkit-scrollbar-track {
-            background: transparent !important;
-        }
-        * {
-            -ms-overflow-style: auto !important;
-            scrollbar-width: auto !important;
-        }
-        .mgmt-container { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .paper-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.2s; }
-        .paper-row:hover { background: #f8fafc; }
-        
-        .controls { display: flex; gap: 15px; align-items: center; }
-        /* 💡 텍스트 대신 직관적인 아이콘 버튼 스타일 */
-        .icon-btn { background: none; border: none; font-size: 1.6em; cursor: pointer; transition: transform 0.2s; padding: 0; outline: none; }
-        .icon-btn:hover { transform: scale(1.15); }
-        
-        .btn-delete { background: #ef4444; color: white; border: none; cursor: pointer; padding: 6px 12px; border-radius: 4px; font-size: 0.9em; margin-left: 10px; }
-        
-        .search-box { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; box-sizing: border-box; outline: none; }
-        .search-box:focus { border-color: #3b82f6; }
-        /* 💡 제목 커스텀 관련 스타일 추가 */
-        .title-container { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .title-text { font-size: 1.1em; font-weight: bold; cursor: pointer; border-bottom: 1px dashed transparent; transition: all 0.2s; padding: 2px 4px; border-radius: 4px; }
-        .title-text:hover { border-bottom: 1px dashed #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
-        .title-text:hover::after { content: " ✏️"; font-size: 0.8em; }
-        
-        .title-edit-input { font-size: 1.1em; padding: 2px 4px; border: 2px solid #3b82f6; border-radius: 4px; font-weight: bold; outline: none; width: 80%; max-width: 400px; }
-        
-        .btn-reset { font-size: 0.75em; padding: 4px 8px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
-        .btn-reset:hover { background: #e2e8f0; color: #0f172a; }</style><script defer="defer" src="../../runtime.c5f14d9c7cd719ad6181.js"></script><script defer="defer" src="../../management.8327160b347cdf885d98.js"></script><script defer="defer" src="../../dark_color_scheme.23d6df4a8a2012fcd502.js"></script></head><body style="background: #f4f6f8; font-family: sans-serif; overflow-y: auto !important; height: auto !important;"><div class="mgmt-container"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="margin: 0;">⚙️ 내 라이브러리 관리</h2><a href="../index.html" class="btn btn-secondary" style="padding: 8px 16px;">메인으로 돌아가기</a></div><div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;"><div style="flex: 1; min-width: 200px;"><input type="text" id="search-input" class="search-box" placeholder="🔍 논문 이름 또는 투고자 검색..."></div><div><label style="font-weight: bold; margin-right: 10px;">📋 정렬:</label> <select id="sort-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;"><option value="desc">최신 투고순 (내림차순)</option><option value="asc">과거 투고순 (오름차순)</option><option value="name">이름순</option></select></div></div></div></body></html>
+      html,
+      body {
+        overflow: auto !important;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+        touch-action: auto !important; /* 모바일 스크롤 허용 */
+      }
+
+      /* 💡 메인 화면에서 숨겼던 스크롤바를 관리 페이지에만 예쁘게 다시 등장시킴 */
+      *::-webkit-scrollbar {
+        display: block !important;
+        width: 10px !important;
+      }
+      *::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1 !important;
+        border-radius: 5px !important;
+      }
+      *::-webkit-scrollbar-track {
+        background: transparent !important;
+      }
+      * {
+        -ms-overflow-style: auto !important;
+        scrollbar-width: auto !important;
+      }
+      .mgmt-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      }
+      .paper-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+      }
+      .paper-row:hover {
+        background: #f8fafc;
+      }
+
+      .controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      /* 💡 텍스트 대신 직관적인 아이콘 버튼 스타일 */
+      .icon-btn {
+        background: none;
+        border: none;
+        font-size: 1.6em;
+        cursor: pointer;
+        transition: transform 0.2s;
+        padding: 0;
+        outline: none;
+      }
+      .icon-btn:hover {
+        transform: scale(1.15);
+      }
+
+      .btn-delete {
+        background: #ef4444;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        margin-left: 10px;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1em;
+        box-sizing: border-box;
+        outline: none;
+      }
+      .search-box:focus {
+        border-color: #3b82f6;
+      }
+      /* 💡 제목 커스텀 관련 스타일 추가 */
+      .title-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+      .title-text {
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        border-bottom: 1px dashed transparent;
+        transition: all 0.2s;
+        padding: 2px 4px;
+        border-radius: 4px;
+      }
+      .title-text:hover {
+        border-bottom: 1px dashed #3b82f6;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+      }
+      .title-text:hover::after {
+        content: ' ✏️';
+        font-size: 0.8em;
+      }
+
+      .title-edit-input {
+        font-size: 1.1em;
+        padding: 2px 4px;
+        border: 2px solid #3b82f6;
+        border-radius: 4px;
+        font-weight: bold;
+        outline: none;
+        width: 80%;
+        max-width: 400px;
+      }
+
+      .btn-reset {
+        font-size: 0.75em;
+        padding: 4px 8px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+      }
+      .btn-reset:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+      }</style><script defer="defer" src="../../runtime.c5f14d9c7cd719ad6181.js"></script><script defer="defer" src="../../management.8327160b347cdf885d98.js"></script><script defer="defer" src="../../dark_color_scheme.23d6df4a8a2012fcd502.js"></script></head><body style="background: #f4f6f8;
+      font-family: sans-serif;
+      overflow-y: auto !important;
+      height: auto !important;"><div class="mgmt-container"><div style="display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;"><h2 style="margin: 0">⚙️ 내 라이브러리 관리</h2><a href="../index.html" class="btn btn-secondary" style="padding: 8px 16px">메인으로 돌아가기</a></div><div style="background: #f8fafc;
+          padding: 15px;
+          border-radius: 6px;
+          margin-bottom: 20px;
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          align-items: center;"><div style="flex: 1; min-width: 200px"><input type="text" id="search-input" class="search-box" placeholder="🔍 논문 이름 또는 투고자 검색..."></div><div><label style="font-weight: bold; margin-right: 10px">📋 정렬:</label> <select id="sort-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc"><option value="desc">최신 투고순 (내림차순)</option><option value="asc">과거 투고순 (오름차순)</option><option value="name">이름순</option></select></div></div></div></body></html>
