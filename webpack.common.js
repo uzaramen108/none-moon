@@ -8,8 +8,9 @@ module.exports = {
   entry: {
     main: './src/resources/js/main.js',
     ko: './src/ko/ko.js',
-    main_update_history:
-      './src/resources/js/update_history/main_update_history.js',
+    login: './src/resources/js/login.js', 
+    management: './src/resources/js/management.js',
+    main_update_history: './src/resources/js/update_history/main_update_history.js',
     dark_color_scheme: './src/resources/js/utils/dark_color_scheme.js',
   },
   output: {
@@ -17,7 +18,7 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
   },
   optimization: {
-    runtimeChunk: { name: 'runtime' }, // this is for code-sharing between "main_online.js" and "ko.js"
+    runtimeChunk: { name: 'runtime' }, 
     splitChunks: {
       chunks: 'all',
     },
@@ -67,6 +68,28 @@ module.exports = {
       template: 'src/ko/index.html',
       filename: 'ko/index.html',
       chunks: ['runtime', 'ko', 'main', 'dark_color_scheme'],
+      chunksSortMode: 'manual',
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true,
+      },
+    }),
+    // 로그인 HTML 생성 플러그인 추가
+    new HtmlWebpackPlugin({
+      template: 'src/ko/login/index.html',
+      filename: 'ko/login/index.html',
+      chunks: ['runtime', 'login', 'dark_color_scheme'], 
+      chunksSortMode: 'manual',
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true,
+      },
+    }),
+    // 관리 HTML 생성 플러그인 추가
+    new HtmlWebpackPlugin({
+      template: 'src/ko/management/index.html',
+      filename: 'ko/management/index.html',
+      chunks: ['runtime', 'management', 'dark_color_scheme'], 
       chunksSortMode: 'manual',
       minify: {
         collapseWhitespace: true,

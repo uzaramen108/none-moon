@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+huggingface_hub
+pydantic
+multipart
+python-multipart
+bcrypt

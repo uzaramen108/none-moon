@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 연구 논문 대시보드</title>
+    <link rel="stylesheet" href="../../resources/style.css" />
+    <style>
+        .auth-container {
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; background-color: #f4f6f8;
+        }
+        .auth-box {
+            background: white; padding: 40px; border-radius: 8px; 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 400px;
+        }
+        .auth-box h2 { margin-top: 0; color: #1e1e2d; text-align: center; margin-bottom: 24px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #555; }
+        .input-group input { 
+            width: 100%; padding: 10px; border: 1px solid #ddd; 
+            border-radius: 4px; box-sizing: border-box; font-size: 1em;
+        }
+        .auth-btn { width: 100%; padding: 12px; font-size: 1.1em; margin-top: 10px; }
+        .toggle-link { text-align: center; margin-top: 15px; font-size: 0.9em; color: #3b82f6; cursor: pointer; }
+        .toggle-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h2 id="auth-title">즐거운 논문생활 ^ ^...</h2>
+            <form id="auth-form">
+                <div class="input-group">
+                    <label for="nickname">닉네임</label>
+                    <input type="text" id="nickname" required placeholder="닉네임을 입력하세요">
+                </div>
+                <div class="input-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" required placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" id="submit-btn" class="btn btn-primary auth-btn">로그인</button>
+            </form>
+            <div class="toggle-link" id="toggle-mode-btn">계정이 없으신가요? 회원가입하기</div>
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="../index.html" style="color: #888; font-size: 0.85em; text-decoration: none;">메인으로 돌아가기</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
