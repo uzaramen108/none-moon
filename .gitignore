@@ -1,1 +1,4 @@
+dist/
 node_modules/
+supadata_config.js
+test.py

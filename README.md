@@ -1,32 +1,31 @@
-# 📑 논문 리뷰 및 요약 인터랙티브 대시보드
+# McCabe-Thiele Method Online
 
-팀원들과 함께 연구 논문의 원문 이미지(PNG)와 요약본(TXT)을 한눈에 비교·분석하고, 원본 PDF를 관리할 수 있는 반응형 웹 대시보드 시스템입니다.
+_&check;_ _English_ | [_Korean(한국어)_](README.ko.md)
 
-## 📱 기기별 특화 기능 (반응형 UI)
-- **🖥️ PC 환경 (가로 모드):** `[좌측 목록 - 중앙 이미지 뷰어 - 우측 요약본]` 구조가 한 화면에 **3분할**로 쾌적하게 보입니다.
-- **📱 모바일 환경 (세로 모드):** 논문 이미지가 화면에 꽉 차게 보이며, **좌우 스와이프(Swipe)** 제스처로 숨겨진 메뉴를 열고 닫을 수 있습니다.
-  - **오른쪽으로 밀기 (Left → Right):** 논문 선택 목록(사이드바) 열기
-  - **왼쪽으로 밀기 (Right → Left):** 논문 요약본(TXT) 창 열기
+**McCabe-Thiele Method Online** is created by undergraduate chemical engineering students, is a web-based simulation tool designed to help chemical engineering students and professionals visualize binary distillation processes. It automates the graphical construction of McCabe-Thiele diagrams to determine the theoretical number of plates, minimum reflux ratio, and optimal feed location. Future updates will provide tools for other chemical processes.
 
-## 📂 폴더 구조 및 파일 배치 방법
-대시보드가 정상적으로 파일을 읽어오려면 아래와 같이 `src/resources/` 폴더 구조를 정확히 맞춰주셔야 합니다.
+You can try the calculator here: https://uzaramen108.github.io/McCabe-Thiele-method-online/
 
-```text
-📁 프로젝트 최상위 폴더
- ┣ 📜 index.html
- ┗ 📂 src/
-    ┣ 📂 js/
-    ┃  ┗ 📜 main.js
-    ┣ 📜 styles.css
-    ┗ 📂 resources/ (※ 여기에 모든 데이터 배치)
-       ┣ 📄 논문파일명.pdf
-       ┣ 📜 논문파일명.txt (요약본 텍스트 파일)
-       ┗ 📂 논문파일명/ (※ 이미지는 논문명과 동일한 폴더 생성 후 배치)
-          ┣ 🖼️ 논문파일명-1.png (또는 -01.png)
-          ┣ 🖼️ 논문파일명-2.png (또는 -02.png)
-          ┗ ...
-```
-*※ 시스템에 자동 페이지 탐색 엔진이 내장되어 있어, 논문별로 `1.png` 방식이든 `01.png` 방식이든 파일명을 자동으로 추적하여 페이지 수를 계산합니다.*
+<img width="1423" height="1261" alt="image" src="https://github.com/user-attachments/assets/01f62700-90f2-4675-bb45-4baf559622f7" />
 
-## 🚀 실행 및 주의사항 (CORS 에러 해결)
-https://uzaramen108.github.io/second-environmental-safety-engineering-contest-papers/ 로 들어가셈 ㅋㅋㄹㅃㅃ
+## Used Tech
+
+This project utilizes a modern web stack to deliver an interactive engineering tool without the need for complex server-side infrastructure.
+
+- **[Chart.js](https://www.chartjs.org/):**
+
+  - Used as the core visualization engine to render the McCabe-Thiele diagram on the HTML5 Canvas.
+  - Handles the precise plotting of the Equilibrium Curve, Operating Lines (Rectifying/Stripping), q-line, and the step-by-step stage construction.
+
+- **[Supabase](https://supabase.com/) (PostgreSQL):**
+
+  - Serves as the backend database to store Vapor-Liquid Equilibrium (VLE) system data.
+  - Allows the application to maintain a shared, persistent library of chemical systems that all users can access and contribute to.
+
+- **LocalStorage (Web API):**
+
+  - Implements a lightweight ownership management system.
+  - Instead of a full authentication system, the application stores the unique IDs of user-created data in the browser's LocalStorage. This grants the creator "delete permissions" for their own data while keeping the platform open and accessible.
+
+- **Webpack:**
+  - Bundles JavaScript modules and assets for optimized production deployment.

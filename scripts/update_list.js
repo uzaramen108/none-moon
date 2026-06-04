@@ -1,9 +1,10 @@
+// scripts/update_list.js 내부
 const fs = require('fs');
 const path = require('path');
 
-// public 폴더 없이 최상위 폴더 기준 경로 설정
-const resourcesDir = path.join(__dirname, '..', 'src', 'resources');
-const jsonFilepath = path.join(__dirname, '..', 'papers.json');
+// 현재 구조에 맞게 경로 수정
+const resourcesDir = path.join(__dirname, '..', 'src', 'resources', 'assets', 'papers');
+const jsonFilepath = path.join(__dirname, '..', 'papers.json'); // 또는 원하는 저장 위치
 
 // resources 폴더가 없으면 생성
 if (!fs.existsSync(resourcesDir)) {

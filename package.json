@@ -1,17 +1,42 @@
 {
-  "name": "paper-dashboard",
+  "name": "second-environmental-safety-engineering-contest-papers",
   "version": "1.0.0",
-  "description": "Interactive Paper Review Dashboard",
-  "main": "index.js",
+  "description": "A web application for the second environmental safety engineering contest papers.",
+  "main": "webpack.common.js",
   "scripts": {
-    "start": "npx serve .",
-    "prebuild": "node scripts/update_list.js",
-    "build": "echo '정적 파일 준비 완료 (별도 번들링 없음)'",
-    "predeploy": "npm run prebuild",
-    "deploy": "gh-pages -d ."
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack serve --config webpack.dev.js",
+    "update-list": "node scripts/update_list.js", 
+    "prebuild": "npm run update-list", 
+    "build": "webpack --config webpack.prod.js",
+    "deploy": "npm run build && gh-pages -d dist --remove '.'"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uzaramen108/second-environmental-safety-engineering-contest-papers.git"
+  },
+  "author": "uzaramen108",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uzaramen108/second-environmental-safety-engineering-contest-papers/issues"
+  },
+  "homepage": "https://github.com/uzaramen108/second-environmental-safety-engineering-contest-papers#readme",
   "devDependencies": {
-    "gh-pages": "^6.1.1",
-    "serve": "^14.2.1"
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^13.0.1",
+    "css-loader": "^6.11.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-prettier": "^4.2.5",
+    "gh-pages": "^6.3.0",
+    "html-webpack-plugin": "^5.6.5",
+    "mini-css-extract-plugin": "^2.9.4",
+    "prettier": "^2.8.8",
+    "webpack": "^5.103.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^4.15.2",
+    "webpack-merge": "^5.10.0"
+  },
+  "dependencies": {
+    "pdfjs-dist": "^6.0.227"
   }
 }
