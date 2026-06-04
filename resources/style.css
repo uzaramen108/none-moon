@@ -1,0 +1,89 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f8fafc; color: #1e293b; height: 100vh; overflow: hidden;
+    touch-action: pan-x pan-y pinch-zoom;
+}
+
+.app-container { display: flex; width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+
+/* 1. Sidebar Styles */
+.sidebar {
+    width: 25%; min-width: 320px; background-color: #0f172a; color: #f8fafc;
+    display: flex; flex-direction: column; border-right: 1px solid #1e293b;
+    transition: width 0.3s ease, min-width 0.3s ease; 
+    overflow: hidden; flex-shrink: 0;
+}
+.sidebar.collapsed { width: 0; min-width: 0; border-right: none; }
+
+.sidebar-header {
+    padding: 24px 20px; background-color: #020617; border-bottom: 1px solid #1e293b;
+    display: flex; justify-content: space-between; align-items: center; min-width: 320px;
+}
+.sidebar-header h2 { font-size: 1.15rem; font-weight: 600; }
+.badge { background-color: #2563eb; color: #ffffff; padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+.paper-list { list-style: none; overflow-y: auto; flex: 1; min-width: 320px; }
+.paper-item { padding: 16px 20px; border-bottom: 1px solid #1e293b; cursor: pointer; transition: all 0.2s ease; }
+.paper-item:hover { background-color: #1e293b; }
+.paper-item.active { background-color: #2563eb; color: #ffffff; }
+.paper-item .paper-meta { font-size: 0.75rem; font-weight: 700; color: #38bdf8; margin-bottom: 4px; display: block; }
+.paper-item .paper-title { font-size: 0.875rem; line-height: 1.45; font-weight: 500; word-break: break-word; }
+
+/* 2. Middle Image Viewer Section */
+.viewer-container { 
+    flex: 1; /* 💡 사이드바가 접히면 이 영역이 자동으로 늘어남 */
+    min-width: 0; 
+    display: flex; flex-direction: column; background-color: #f1f5f9; border-right: 1px solid #e2e8f0; 
+    transition: flex 0.3s ease; 
+}
+.panel-header {
+    height: 70px; padding: 0 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0;
+    display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+.panel-header h2 { font-size: 1rem; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
+
+.image-viewport { 
+    flex: 1; overflow-y: auto; overflow-x: auto; 
+    display: flex; flex-direction: column; align-items: center; 
+    padding: 24px; background-color: #475569; 
+    position: relative; 
+}
+
+/* 💡 PDF 텍스트 레이어 포지셔닝 */
+.textLayer {
+    position: absolute; text-align: initial;
+    color: transparent; line-height: 1.0; white-space: pre;
+    cursor: text; transform-origin: 0% 0%; z-index: 2; 
+}
+.textLayer span { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
+.textLayer ::selection { background: rgba(0, 0, 255, 0.3); }
+
+.viewer-controls { height: 64px; background-color: #ffffff; border-top: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; gap: 24px; flex-shrink: 0; }
+#page-number-indicator { font-size: 0.9rem; font-weight: 600; color: #475569; min-width: 60px; text-align: center; }
+
+/* 3. Right Summary Text Section */
+.summary-container { width: 25%; min-width: 320px; display: flex; flex-direction: column; background-color: #ffffff; flex-shrink: 0;}
+.summary-body { flex: 1; padding: 24px; overflow-y: auto; background-color: #fafafa; }
+.summary-body pre { white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem; line-height: 1.65; color: #334155; font-family: inherit; }
+
+/* UI Components */
+.placeholder-msg { display: flex; justify-content: center; align-items: center; height: 100%; color: #94a3b8; text-align: center; font-size: 0.9rem; padding: 32px; line-height: 1.5; }
+.btn { padding: 8px 16px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: none; transition: all 0.15s ease-in-out; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.btn-primary { background-color: #2563eb; color: #ffffff; }
+.btn-primary:hover { background-color: #1d4ed8; }
+.btn-secondary { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
+.btn-secondary:hover { background-color: #f1f5f9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 📱 모바일 디바이스 반응형 */
+.mobile-backdrop { display: none; }
+@media screen and (max-width: 768px) {
+    .mobile-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 10; transition: opacity 0.3s ease; }
+    .mobile-backdrop.active { display: block; }
+    .panel-header { padding: 0 16px; }
+    .sidebar { position: fixed; top: 0; left: -100%; width: 85%; height: 100vh; min-width: unset; z-index: 20; transition: left 0.3s ease-in-out; }
+    .sidebar.open { left: 0; }
+    .sidebar.collapsed { width: 85%; } 
+    .summary-container { position: fixed; top: 0; right: -100%; width: 85%; height: 100vh; min-width: unset; z-index: 20; transition: right 0.3s ease-in-out; box-shadow: -5px 0 15px rgba(0,0,0,0.1); }
+    .summary-container.open { right: 0; }
+}
