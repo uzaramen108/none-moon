@@ -1,4 +1,29 @@
-<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>내 라이브러리 관리</title><link rel="stylesheet" href="../../resources/style.css"><style>.mgmt-container { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>내 라이브러리 관리</title><link rel="stylesheet" href="../../resources/style.css"><style>/* 🚨 [스크롤 강제 복구 로직] 기존 CSS의 방해를 모두 무력화 🚨 */
+        html, body {
+            overflow: auto !important;
+            overflow-y: auto !important;
+            height: auto !important;
+            min-height: 100vh !important;
+            touch-action: auto !important; /* 모바일 스크롤 허용 */
+        }
+        
+        /* 💡 메인 화면에서 숨겼던 스크롤바를 관리 페이지에만 예쁘게 다시 등장시킴 */
+        *::-webkit-scrollbar {
+            display: block !important;
+            width: 10px !important;
+        }
+        *::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1 !important;
+            border-radius: 5px !important;
+        }
+        *::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+        * {
+            -ms-overflow-style: auto !important;
+            scrollbar-width: auto !important;
+        }
+        .mgmt-container { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .paper-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; transition: background 0.2s; }
         .paper-row:hover { background: #f8fafc; }
         
