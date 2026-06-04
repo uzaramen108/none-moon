@@ -62,10 +62,22 @@ body {
 #page-number-indicator { font-size: 0.9rem; font-weight: 600; color: #475569; min-width: 60px; text-align: center; }
 
 /* 3. Right Summary Text Section */
-.summary-container { width: 25%; min-width: 320px; display: flex; flex-direction: column; background-color: #ffffff; flex-shrink: 0;}
+/* 요약본 컨테이너 영역 (화면의 약 35% 차지) */
+#summary-container {
+    flex: 1;
+    display: flex;       /* 숨겨져 있던 영역 켜기 */
+    flex-direction: column;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-left: 1px solid #ddd;
+    overflow-y: auto;
+}
 .summary-body { flex: 1; padding: 24px; overflow-y: auto; background-color: #fafafa; }
 .summary-body pre { white-space: pre-wrap; word-wrap: break-word; font-size: 0.9rem; line-height: 1.65; color: #334155; font-family: inherit; }
-
+#summary-display {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
 /* UI Components */
 .placeholder-msg { display: flex; justify-content: center; align-items: center; height: 100%; color: #94a3b8; text-align: center; font-size: 0.9rem; padding: 32px; line-height: 1.5; }
 .btn { padding: 8px 16px; font-size: 0.85rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: none; transition: all 0.15s ease-in-out; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
