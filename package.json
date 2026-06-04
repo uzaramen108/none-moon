@@ -1,0 +1,17 @@
+{
+  "name": "paper-dashboard",
+  "version": "1.0.0",
+  "description": "Interactive Paper Review Dashboard",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx serve .",
+    "prebuild": "node scripts/update_list.js",
+    "build": "echo '정적 파일 준비 완료 (별도 번들링 없음)'",
+    "predeploy": "npm run prebuild",
+    "deploy": "gh-pages -d ."
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1",
+    "serve": "^14.2.1"
+  }
+}

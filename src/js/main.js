@@ -1,18 +1,9 @@
-// 유저가 업로드한 10개 논문의 실제 파일명 데이터
-const papersDatabase = [
-    { filename: "Syngas production through CO2-mediated pyrolysis of polyoxymethylene", displayName: "CO2 매개 POM 열분해를 통한 합성가스 생산 (2024)" },
-    { filename: "Pyrolysis mechanism of engineering plastic waste under carbon dioxide", displayName: "이산화탄소 분위기 고성능 플라스틱 열분해 메커니즘 (2026)" },
-    { filename: "Sustainable-microwave-driven-CO2-gasification-of-_2024_Applied-Catalysis-B--", displayName: "마이크로웨이브 구동 폐플라스틱 CO2 가스화 공정 (2024)" },
-    { filename: "Enhancement-of-syngas-through-integrating-carbon-dioxi_2024_Energy-Conversio", displayName: "열화학적 가스화 공정 내 이산화탄소 대량 통합 효과 (2024)" },
-    { filename: "Evaluating-sustainability-of-CO2-mediated-pyrolysis-of_2025_Bioresource-Tech", displayName: "CO2 매개 열분해 기술 전과정 평가 (LCA 지속가능성, 2025)" },
-    { filename: "Assessing changes to nutrient density and availability following separation", displayName: "고액 분리 공정에 따른 가축 분뇨 슬러리 영양소 밀도 변화" },
-    { filename: "Compositional modification of products from Co-Pyrolysis of chicken", displayName: "도계 부산물 바이오매스 CO2 매개 공-열분해 유분 개질" },
-    { filename: "Thermo-chemical-disposal-of-plastic-waste-from-end-of-life-vehicle_2024_Ener", displayName: "폐자동차(ELV) 유래 혼합 플라스틱 폐기물 열화학적 처리 (2024)" },
-    { filename: "Thermochemical-processing-for-the-sustainable-disposal-of-spen_2024_Chemosph", displayName: "유해 오염물 흡착 폐기질의 지속 가능한 고온 개질 정제 (2024)" },
-    { filename: "Valorizing-spent-mushroom-substrate-into-syngas-by-the-_2024_Bioresource-Tec", displayName: "폐버섯배지(SMS) 바이오매스의 CO2 매개 합성가스 자원화 (2024)" }
-];
+// PDF.js 워커 경로 설정
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+let papersDatabase = [];
 let selectedPaper = null;
+let currentPdfDocument = null; 
 let currentPageNumber = 1;
 
 // DOM 캐싱
@@ -23,7 +14,13 @@ const paperListContainer = document.getElementById("paper-list");
 const paperCountBadge = document.getElementById("paper-count");
 const viewerTitleDisplay = document.getElementById("viewer-title");
 const pdfDownloadLink = document.getElementById("pdf-download-link");
-const documentImageElement = document.getElementById("document-image");
+const pdfCanvas = document.getElementById("pdf-render-canvas"); 
+const pdfCtx = pdfCanvas.getContext('2d');
+
+const textLayerDiv = document.createElement("div");
+textLayerDiv.className = "textLayer";
+pdfCanvas.parentNode.insertBefore(textLayerDiv, pdfCanvas.nextSibling);
+
 const viewerPlaceholderElement = document.getElementById("viewer-placeholder");
 const viewerControlsPanel = document.getElementById("viewer-controls");
 const pageNumberIndicator = document.getElementById("page-number-indicator");
@@ -34,7 +31,70 @@ const summaryPlaceholderElement = document.getElementById("summary-placeholder")
 const btnCopySummary = document.getElementById("btn-copy");
 const btnToggleSidebar = document.getElementById("btn-toggle-sidebar");
 
+// ==========================================
+// 🛠️ 디버깅 시스템 구동
+// ==========================================
+console.log("==================================================");
+console.log("🚀 [SYSTEM] 대시보드 스크립트 실행 시작!");
+console.log(`🌐 [SYSTEM] 현재 브라우저 URL: ${window.location.href}`);
+console.log("==================================================");
+
+// Github Pages 호환성 확보를 위한 Base URL 추출 함수
+function getBaseUrl() {
+    let url = window.location.pathname;
+    if (url.endsWith('index.html')) {
+        url = url.slice(0, -10);
+    }
+    if (!url.endsWith('/')) {
+        url += '/';
+    }
+    return url;
+}
+
+const BASE_URL = getBaseUrl();
+console.log(`💡 [CONFIG] 계산된 Base URL: '${BASE_URL}'`);
+
+async function buildPapersDatabase() {
+    console.log("📂 [FETCH] papers.json 로딩 시도...");
+    
+    // 절대 경로 비스무리하게 만들어서 배포 환경에서도 작동하게 함
+    const jsonPath = `${BASE_URL}papers.json`;
+    console.log(`- 요청 경로: ${jsonPath}`);
+
+    try {
+        const response = await fetch(jsonPath);
+        console.log(`- 응답 상태: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+            throw new Error(`papers.json을 찾을 수 없습니다. (상태 코드: ${response.status})`);
+        }
+        
+        const fetchedFiles = await response.json();
+        console.log(`✅ [FETCH SUCCESS] 성공적으로 파싱된 논문 개수: ${fetchedFiles.length}개`);
+        console.log("첫 번째 논문 샘플:", fetchedFiles[0]);
+
+        papersDatabase = fetchedFiles.map(filename => ({
+            filename: filename,
+            displayName: filename 
+        }));
+
+        initializeDashboard();
+
+    } catch (error) {
+        console.error("❌ [FETCH ERROR] 논문 목록 로드 실패:", error);
+        viewerPlaceholderElement.innerHTML = `
+            <p style="color:#ef4444; font-weight:bold;">⚠️ 논문 목록을 불러오지 못했습니다.</p>
+            <p style="font-size:0.85em; text-align:left; background:#fee2e2; padding:10px; border-radius:5px;">
+                <b>에러 로그:</b> ${error.message}<br>
+                <b>시도한 경로:</b> ${jsonPath}
+            </p>
+        `;
+    }
+}
+
 function initializeDashboard() {
+    console.log("🛠️ [INIT] 대시보드 UI 초기화 시작");
+    
     paperCountBadge.textContent = `${papersDatabase.length} Papers`;
 
     papersDatabase.forEach((paper, index) => {
@@ -50,108 +110,153 @@ function initializeDashboard() {
     btnNextPage.addEventListener("click", handleNextPageAction);
     btnCopySummary.addEventListener("click", handleSummaryClipboardCopy);
     mobileBackdrop.addEventListener("click", closeAllMobilePanels);
-
+    
     btnToggleSidebar.addEventListener("click", () => {
         if (window.innerWidth > 768) {
             sidebarEl.classList.toggle("collapsed");
+            if (currentPdfDocument) setTimeout(() => renderPage(currentPageNumber), 300); 
         } else {
             sidebarEl.classList.add("open");
             mobileBackdrop.classList.add("active");
         }
     });
+
+    window.addEventListener('resize', () => {
+        if (currentPdfDocument && window.innerWidth > 768) {
+            setTimeout(() => renderPage(currentPageNumber), 300); 
+        }
+    });
+    
+    console.log("✅ [INIT] 사이드바 메뉴 렌더링 및 이벤트 바인딩 완료");
 }
 
 function handlePaperSelection(filename) {
+    console.groupCollapsed(`▶️ [ACTION] 논문 클릭됨: ${filename.substring(0, 30)}...`);
+    
     selectedPaper = papersDatabase.find(p => p.filename === filename);
     currentPageNumber = 1;
+    currentPdfDocument = null;
 
-    document.querySelectorAll(".paper-item").forEach(item => {
-        if (item.dataset.filename === filename) item.classList.add("active");
-        else item.classList.remove("active");
-    });
+    document.querySelectorAll(".paper-item").forEach(item => item.dataset.filename === filename ? item.classList.add("active") : item.classList.remove("active"));
 
     viewerTitleDisplay.textContent = selectedPaper.displayName;
+    
+    // 경로 최적화
+    const pdfUrl = `${BASE_URL}src/resources/${selectedPaper.filename}.pdf`;
+    console.log(`- 설정된 PDF 다운로드/렌더링 경로: ${pdfUrl}`);
+    
     pdfDownloadLink.style.display = "inline-flex";
-    pdfDownloadLink.href = `./src/resources/${selectedPaper.filename}.pdf`;
+    pdfDownloadLink.href = pdfUrl;
     
     viewerControlsPanel.style.display = "flex";
     btnCopySummary.style.display = "block";
 
-    fetchSummaryTextContent(selectedPaper.filename);
-
     viewerPlaceholderElement.style.display = "block";
-    viewerPlaceholderElement.innerHTML = "<p>🔍 원문 이미지 개수 파악 중...</p>";
-    documentImageElement.style.display = "none";
+    viewerPlaceholderElement.innerHTML = "<p>⏳ 문서를 렌더링하는 중입니다...</p>";
+    pdfCanvas.style.display = "none";
+    textLayerDiv.style.display = "none"; 
 
-    probePaperImages(selectedPaper.filename, (total, isPadded) => {
-        if (total === 0) {
-            viewerPlaceholderElement.innerHTML = `<p>⚠️ 이미지를 찾을 수 없습니다.</p>`;
-        } else {
-            selectedPaper.totalPages = total;
-            selectedPaper.isPadded = isPadded; 
-            renderTargetImageFrame();
-        }
+    fetchSummaryTextContent(selectedPaper.filename);
+    loadPDFDocument(pdfUrl);
+
+    if (window.innerWidth <= 768) closeAllMobilePanels();
+    console.groupEnd();
+}
+
+function loadPDFDocument(url) {
+    console.log(`📄 [PDF] 로드 시도: ${url}`);
+    
+    pdfjsLib.getDocument(url).promise.then(pdfDoc => {
+        console.log(`✅ [PDF SUCCESS] 로드 성공! 총 페이지 수: ${pdfDoc.numPages}`);
+        currentPdfDocument = pdfDoc;
+        selectedPaper.totalPages = pdfDoc.numPages; 
+        renderPage(currentPageNumber);
+    }).catch(err => {
+        console.error(`❌ [PDF ERROR] 로드 실패:`, err);
+        viewerPlaceholderElement.innerHTML = `
+            <p style="color:#ef4444; font-weight:bold;">⚠️ PDF 문서를 불러올 수 없습니다.</p>
+            <p style="font-size:0.85em; text-align:left; background:#fee2e2; padding:10px; border-radius:5px;">
+                <b>에러 내용:</b> ${err.message}<br>
+                <b>요청 경로:</b> ${url}
+            </p>
+        `;
+    });
+}
+
+function renderPage(num) {
+    console.log(`🖼️ [RENDER] PDF ${num}페이지 렌더링 시작...`);
+    viewerPlaceholderElement.style.display = "none";
+    pdfCanvas.style.display = "block";
+    textLayerDiv.style.display = "block";
+
+    currentPdfDocument.getPage(num).then(page => {
+        const viewportContainer = document.querySelector('.image-viewport');
+        const containerWidth = viewportContainer.clientWidth - 48; 
+        
+        const unscaledViewport = page.getViewport({ scale: 1.0 });
+        let scale = containerWidth / unscaledViewport.width;
+        if (scale < 1.0) scale = 1.2; 
+
+        console.log(`- 렌더링 스케일: ${scale.toFixed(2)}배 (컨테이너 너비: ${containerWidth}px)`);
+
+        const viewport = page.getViewport({ scale: scale });
+        
+        pdfCanvas.height = viewport.height;
+        pdfCanvas.width = viewport.width;
+
+        textLayerDiv.style.width = `${viewport.width}px`;
+        textLayerDiv.style.height = `${viewport.height}px`;
+        textLayerDiv.style.left = `${pdfCanvas.offsetLeft}px`;
+        textLayerDiv.style.top = `${pdfCanvas.offsetTop}px`;
+        textLayerDiv.innerHTML = ''; 
+
+        const renderContext = { canvasContext: pdfCtx, viewport: viewport };
+        const renderTask = page.render(renderContext);
+        
+        renderTask.promise.then(() => page.getTextContent()).then(textContent => {
+            console.log(`- 텍스트 레이어 생성 완료 (길이: ${textContent.items.length})`);
+            pdfjsLib.renderTextLayer({
+                textContent: textContent,
+                container: textLayerDiv,
+                viewport: viewport,
+                textDivs: []
+            });
+        });
     });
 
-    if (window.innerWidth <= 768) {
-        closeAllMobilePanels();
-    }
-}
-
-function probePaperImages(filename, callback) {
-    let currentMax = 0;
-    let detectedPadded = false;
-
-    function tryLoad(page, checkingPadded) {
-        const img = new Image();
-        let pageStr = checkingPadded ? String(page).padStart(2, '0') : String(page);
-        
-        img.onload = () => {
-            currentMax = page;
-            detectedPadded = checkingPadded;
-            tryLoad(page + 1, checkingPadded);
-        };
-
-        img.onerror = () => {
-            if (page === 1 && !checkingPadded) tryLoad(1, true);
-            else callback(currentMax, detectedPadded);
-        };
-
-        img.src = `./src/resources/${filename}/${filename}-${pageStr}.png`;
-    }
-    tryLoad(1, false);
-}
-
-function renderTargetImageFrame() {
-    viewerPlaceholderElement.style.display = "none";
-    documentImageElement.style.display = "block";
-
-    let pageStr = selectedPaper.isPadded ? String(currentPageNumber).padStart(2, '0') : String(currentPageNumber);
-    documentImageElement.src = `./src/resources/${selectedPaper.filename}/${selectedPaper.filename}-${pageStr}.png`;
-
-    pageNumberIndicator.textContent = `${currentPageNumber} / ${selectedPaper.totalPages}`;
-    btnPrevPage.disabled = (currentPageNumber === 1);
-    btnNextPage.disabled = (currentPageNumber === selectedPaper.totalPages);
+    pageNumberIndicator.textContent = `${num} / ${selectedPaper.totalPages}`;
+    btnPrevPage.disabled = (num === 1);
+    btnNextPage.disabled = (num === selectedPaper.totalPages);
 }
 
 function fetchSummaryTextContent(filename) {
+    console.log(`📄 [TXT] 요약본 로드 시도...`);
     summaryPlaceholderElement.style.display = "none";
     summaryDisplayPre.style.display = "block";
-    summaryDisplayPre.textContent = "요약 텍스트 로딩 중...";
+    summaryDisplayPre.textContent = "요약 로딩 중...";
+    
+    const txtUrl = `${BASE_URL}src/resources/${filename}.txt`;
+    console.log(`- 요청 경로: ${txtUrl}`);
 
-    fetch(`./src/resources/${filename}.txt`)
-        .then(response => {
-            if (!response.ok) throw new Error("에러");
-            return response.text();
+    fetch(txtUrl)
+        .then(res => {
+            console.log(`- 요약본 응답 상태: ${res.status}`);
+            if (!res.ok) throw new Error(res.status); 
+            return res.text(); 
         })
-        .then(data => { summaryDisplayPre.textContent = data; })
-        .catch(err => { summaryDisplayPre.textContent = `⚠️ 요약본 로드 실패`; });
+        .then(data => { 
+            console.log(`✅ [TXT SUCCESS] 텍스트 로드 성공 (길이: ${data.length}자)`);
+            summaryDisplayPre.textContent = data; 
+        })
+        .catch(err => { 
+            console.error(`❌ [TXT ERROR] 요약본 로드 실패:`, err);
+            summaryDisplayPre.textContent = `⚠️ 요약본 텍스트(.txt) 파일을 찾을 수 없습니다.\n경로: ${txtUrl}`; 
+        });
 }
 
 function handleSummaryClipboardCopy() {
     const textBuffer = summaryDisplayPre.textContent;
     if (!textBuffer || textBuffer.startsWith("요약") || textBuffer.startsWith("⚠️")) return;
-
     navigator.clipboard.writeText(textBuffer).then(() => {
         const preservedText = btnCopySummary.textContent;
         btnCopySummary.textContent = "복사 완료! ✔️";
@@ -159,84 +264,24 @@ function handleSummaryClipboardCopy() {
     });
 }
 
-function handlePreviousPageAction() {
-    if (currentPageNumber > 1) { currentPageNumber--; renderTargetImageFrame(); }
-}
-function handleNextPageAction() {
-    if (currentPageNumber < selectedPaper.totalPages) { currentPageNumber++; renderTargetImageFrame(); }
-}
+function handlePreviousPageAction() { if (currentPageNumber > 1) { currentPageNumber--; renderPage(currentPageNumber); } }
+function handleNextPageAction() { if (currentPageNumber < selectedPaper.totalPages) { currentPageNumber++; renderPage(currentPageNumber); } }
 
-// ==========================================
-// 📱 모바일 스와이프(Swipe) 터치 제어 로직
-// ==========================================
-let touchStartX = 0;
-let touchEndX = 0;
-const SWIPE_THRESHOLD = 60;
-let isSwipeAllowed = true;
-
+let touchStartX = 0; let touchEndX = 0; const SWIPE_THRESHOLD = 60; let isSwipeAllowed = true;
 document.addEventListener('touchstart', e => {
-    // 1. 두 손가락 이상 닿으면 확대/축소 동작이므로 스와이프 무시
-    if (e.touches.length > 1) {
-        isSwipeAllowed = false;
-        return;
-    }
-
-    // 2. 화면이 조금이라도 확대된 상태(scale > 1)라면 스와이프 무시
-    const currentScale = window.visualViewport ? window.visualViewport.scale : 1;
-    if (currentScale > 1.05) {
-        isSwipeAllowed = false;
-        return;
-    }
-
-    isSwipeAllowed = true;
-    touchStartX = e.changedTouches[0].screenX;
+    if (e.touches.length > 1 || (window.visualViewport && window.visualViewport.scale > 1.05)) { isSwipeAllowed = false; return; }
+    isSwipeAllowed = true; touchStartX = e.changedTouches[0].screenX;
 }, { passive: true });
-
-document.addEventListener('touchmove', e => {
-    // 움직이는 도중에 두 손가락이 닿아도 스와이프 차단
-    if (e.touches.length > 1) {
-        isSwipeAllowed = false;
-    }
-}, { passive: true });
-
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) isSwipeAllowed = false; }, { passive: true });
 document.addEventListener('touchend', e => {
-    if (!isSwipeAllowed) return; // 스와이프 조건에 부합하지 않으면 탈출
-
+    if (!isSwipeAllowed) return;
     touchEndX = e.changedTouches[0].screenX;
-    handleSwipeGesture();
+    if (window.innerWidth > 768) return;
+    const dist = touchEndX - touchStartX;
+    if (dist > SWIPE_THRESHOLD) summaryEl.classList.contains('open') ? (summaryEl.classList.remove('open'), mobileBackdrop.classList.remove('active')) : (sidebarEl.classList.add('open'), mobileBackdrop.classList.add('active'));
+    else if (dist < -SWIPE_THRESHOLD) sidebarEl.classList.contains('open') ? (sidebarEl.classList.remove('open'), mobileBackdrop.classList.remove('active')) : (selectedPaper && (summaryEl.classList.add('open'), mobileBackdrop.classList.add('active')));
 }, { passive: true });
 
-function handleSwipeGesture() {
-    if (window.innerWidth > 768) return;
+function closeAllMobilePanels() { sidebarEl.classList.remove('open'); summaryEl.classList.remove('open'); mobileBackdrop.classList.remove('active'); }
 
-    const swipeDistance = touchEndX - touchStartX;
-
-    if (swipeDistance > SWIPE_THRESHOLD) {
-        if (summaryEl.classList.contains('open')) {
-            summaryEl.classList.remove('open');
-            mobileBackdrop.classList.remove('active');
-        } else {
-            sidebarEl.classList.add('open');
-            mobileBackdrop.classList.add('active');
-        }
-    }
-    else if (swipeDistance < -SWIPE_THRESHOLD) {
-        if (sidebarEl.classList.contains('open')) {
-            sidebarEl.classList.remove('open');
-            mobileBackdrop.classList.remove('active');
-        } else {
-            if (selectedPaper) {
-                summaryEl.classList.add('open');
-                mobileBackdrop.classList.add('active');
-            }
-        }
-    }
-}
-
-function closeAllMobilePanels() {
-    sidebarEl.classList.remove('open');
-    summaryEl.classList.remove('open');
-    mobileBackdrop.classList.remove('active');
-}
-
-initializeDashboard();
+buildPapersDatabase();
