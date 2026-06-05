@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>내 라이브러리 관리</title>
+    <title>Library Management</title>
     <link rel="stylesheet" href="../../resources/style.css" />
     <style>
         /* 🚨 [스크롤 강제 복구 로직] */
@@ -44,25 +44,25 @@
 <body style="background: #f4f6f8; font-family: sans-serif;">
     <div class="mgmt-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0;">⚙️ 내 라이브러리 관리 (<span id="user-display"></span>)</h2>
-            <a href="../index.html" class="btn btn-secondary" style="padding: 8px 16px;">메인으로 돌아가기</a>
+            <h2 style="margin: 0;">⚙️ Library Management (<span id="user-display"></span>)</h2>
+            <a href="../index.html" class="btn btn-secondary" style="padding: 8px 16px;">Back to Main</a>
         </div>
         
         <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
             <div style="flex: 1; min-width: 200px;">
-                <input type="text" id="search-input" class="search-box" placeholder="🔍 논문 이름 또는 투고자 검색...">
+                <input type="text" id="search-input" class="search-box" placeholder="🔍 Search by paper title or author...">
             </div>
             <div>
-                <label style="font-weight: bold; margin-right: 10px;">📋 정렬:</label>
+                <label style="font-weight: bold; margin-right: 10px;">📋 Sort:</label>
                 <select id="sort-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
-                    <option value="desc">최신 투고순 (내림차순)</option>
-                    <option value="asc">과거 투고순 (오름차순)</option>
-                    <option value="name">이름순</option>
+                    <option value="desc">Latest Submission (Descending)</option>
+                    <option value="asc">Oldest Submission (Ascending)</option>
+                    <option value="name">Name</option>
                 </select>
             </div>
         </div>
 
-        <h3>📚 등록된 전체 논문 목록</h3>
+        <h3>📚 All Registered Papers</h3>
         <div id="management-list">
             </div>
     </div>

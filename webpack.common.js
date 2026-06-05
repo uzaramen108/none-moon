@@ -76,6 +76,16 @@ module.exports = {
     }),
     // 로그인 HTML 생성 플러그인 추가
     new HtmlWebpackPlugin({
+      template: 'src/en/login/index.html',
+      filename: 'en/login/index.html',
+      chunks: ['runtime', 'login', 'dark_color_scheme'], 
+      chunksSortMode: 'manual',
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true,
+      },
+    }),
+    new HtmlWebpackPlugin({
       template: 'src/ko/login/index.html',
       filename: 'ko/login/index.html',
       chunks: ['runtime', 'login', 'dark_color_scheme'], 
@@ -86,6 +96,16 @@ module.exports = {
       },
     }),
     // 관리 HTML 생성 플러그인 추가
+    new HtmlWebpackPlugin({
+      template: 'src/en/management/index.html',
+      filename: 'en/management/index.html',
+      chunks: ['runtime', 'management', 'dark_color_scheme'], 
+      chunksSortMode: 'manual',
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true,
+      },
+    }),
     new HtmlWebpackPlugin({
       template: 'src/ko/management/index.html',
       filename: 'ko/management/index.html',
